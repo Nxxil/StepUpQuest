@@ -21,3 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "StepUp Quest"
 include(":app")
+include(":stepupquest_wear")
+include(":stepupquest_tv")
