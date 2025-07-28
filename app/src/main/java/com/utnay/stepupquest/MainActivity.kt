@@ -6,18 +6,20 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import kotlin.math.sqrt
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var stepCount = 0
     private var dailyGoal = 10000
-    private var lastAcceleration = 0f
-    private var lastTime: Long = 0
     private var totalSteps = 0 // Pasos totales (móvil + wearable)
 
     // Declaración de vistas
@@ -30,9 +32,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     // Sensores
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
+    private var gyroscope: Sensor? = null
+
+    // Variables para eventos de sensores
+    private var accelEvent: SensorEvent? = null
+    private var gyroEvent: SensorEvent? = null
+
+    // Helper para fusión de sensores
+    private lateinit var sensorFusionHelper: SensorFusionHelper
 
     // Data Manager para comunicación con wearable
     private lateinit var stepDataManager: StepDataManager
+
+    // Managers para almacenamiento y TV
+    private lateinit var dataStorageManager: DataStorageManager
+    private lateinit var tvDataSender: TVDataSender
+
+    // Activity Result Launcher para configurar meta
+    private val setGoalLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            result.data?.getIntExtra("newGoal", 10000)?.let { newGoal ->
+                updateGoal(newGoal)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,9 +71,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Inicializar sensores
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
+
+        // Inicializar SensorFusionHelper
+        sensorFusionHelper = SensorFusionHelper()
 
         // Inicializar Data Manager
         stepDataManager = StepDataManager(this)
+
+        // Inicializar managers para almacenamiento y TV
+        dataStorageManager = DataStorageManager(this)
+        tvDataSender = TVDataSender(this)
+
+        // Cargar la meta guardada
+        dailyGoal = dataStorageManager.getDailyGoal()
+        stepCount = dataStorageManager.getTodaySteps()
+        totalSteps = stepCount
 
         // Inicializar UI
         updateStepCount(stepCount)
@@ -60,7 +96,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         btnMeta.setOnClickListener {
             val intent = Intent(this, MainActivity2::class.java)
             intent.putExtra("currentGoal", dailyGoal)
-            startActivityForResult(intent, REQUEST_CODE_SET_GOAL)
+            setGoalLauncher.launch(intent)
         }
 
         // Botón: Ver Estadísticas
@@ -72,47 +108,50 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        // Registrar el listener del sensor
+        // Registrar los listeners de los sensores
         accelerometer?.also { sensor ->
+            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+        gyroscope?.also { sensor ->
             sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
         }
     }
 
     override fun onPause() {
         super.onPause()
-        // Desregistrar el listener del sensor para ahorrar batería
+        // Desregistrar los listeners de los sensores para ahorrar batería
         sensorManager.unregisterListener(this)
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {
-            if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                // Calcular la magnitud de la aceleración
-                val x = it.values[0]
-                val y = it.values[1]
-                val z = it.values[2]
-
-                val acceleration = sqrt(x * x + y * y + z * z)
-                val currentTime = System.currentTimeMillis()
-
-                // Detectar movimiento significativo (paso)
-                if ((currentTime - lastTime) > 100) { // Evitar detecciones muy rápidas
-                    val diff = kotlin.math.abs(acceleration - lastAcceleration)
-                    if (diff > 2.0) { // Umbral de detección de paso
-                        stepCount++
-                        totalSteps = stepCount // Por ahora solo pasos del móvil
-                        updateStepCount(stepCount)
-
-                        // Enviar datos al wearable
-                        stepDataManager.sendStepsToWear(totalSteps)
-
-                        // Verificar porcentajes para notificaciones
-                        checkMilestonePercentage()
-                    }
-                    lastAcceleration = acceleration
-                    lastTime = currentTime
+            when (it.sensor.type) {
+                Sensor.TYPE_ACCELEROMETER -> {
+                    accelEvent = it
+                    checkForStep()
+                }
+                Sensor.TYPE_GYROSCOPE -> {
+                    gyroEvent = it
+                    checkForStep()
                 }
             }
+        }
+    }
+
+    private fun checkForStep() {
+        if (sensorFusionHelper.isStepDetected(accelEvent, gyroEvent)) {
+            stepCount++
+            totalSteps = stepCount
+            updateStepCount(stepCount)
+
+            // Enviar datos al wearable
+            stepDataManager.sendStepsToWear(totalSteps)
+
+            // Verificar porcentajes para notificaciones
+            checkMilestonePercentage()
+
+            // Enviar datos a TV
+            sendDataToTV()
         }
     }
 
@@ -126,32 +165,38 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         when {
             percentage >= 80 && percentage < 85 -> {
                 stepDataManager.sendNotificationToWear(percentage, "¡Llegaste al 80% de tu meta diaria!")
+                sendStatsToTV()
             }
             percentage >= 50 && percentage < 55 -> {
                 stepDataManager.sendNotificationToWear(percentage, "¡Llegaste al 50% de tu meta diaria!")
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_SET_GOAL && resultCode == RESULT_OK) {
-            data?.getIntExtra("newGoal", 10000)?.let { newGoal ->
-                updateGoal(newGoal)
+                sendStatsToTV()
             }
         }
     }
 
     private fun updateStepCount(steps: Int) {
         stepCount = steps
-        textViewSteps.text = "$steps pasos"
+        textViewSteps.text = getString(R.string.steps_text, stepCount)
         updateProgressBar()
+
+        // Guardar pasos diarios y en historial
+        dataStorageManager.saveDailySteps(stepCount)
+        dataStorageManager.addToHistory(stepCount)
+
+        // Notificar que las estadísticas se actualizaron
+        notifyStatsUpdated()
+
+        // Logging para debug
+        Log.d("MainActivity", "Pasos actualizados: $stepCount, Historial: ${dataStorageManager.getStepHistory()}")
     }
 
     private fun updateGoal(goal: Int) {
         dailyGoal = goal
-        textViewGoal.text = "META: $goal pasos"
+        textViewGoal.text = getString(R.string.goal_text, dailyGoal)
         updateProgressBar()
+
+        // Guardar meta diaria
+        dataStorageManager.saveDailyGoal(goal)
     }
 
     private fun updateProgressBar() {
@@ -159,16 +204,37 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         progressBar.progress = percentage.coerceAtMost(100) // Limitar a 100%
     }
 
-    // Metodo para actualizar pasos cuando se reciben datos del wearable
-    fun updateStepsFromWear(wearSteps: Int) {
-        totalSteps = stepCount + wearSteps
-        runOnUiThread {
-            updateStepCount(stepCount) // Actualiza la UI con los pasos del móvil
-            // El total se maneja internamente para estadísticas y notificaciones
+    private fun sendDataToTV() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val percentage = if (dailyGoal == 0) 0 else (stepCount * 100) / dailyGoal
+            val stepData = StepData(
+                mobileSteps = stepCount,
+                wearSteps = 0,
+                totalSteps = totalSteps,
+                timestamp = System.currentTimeMillis(),
+                dailyGoal = dailyGoal
+            )
+
+            Log.d("MainActivity", "Enviando datos a TV: $stepData")
+            val success = tvDataSender.sendDataToTV(stepData)
+            Log.d("MainActivity", "Envío a TV ${if (success) "exitoso" else "fallido"}")
         }
     }
 
-    companion object {
-        private const val REQUEST_CODE_SET_GOAL = 1
+    private fun sendStatsToTV() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val history = dataStorageManager.getStepHistory()
+            Log.d("MainActivity", "Enviando estadísticas a TV: $history")
+            val success = tvDataSender.sendStatsData(history)
+            Log.d("MainActivity", "Envío de estadísticas a TV ${if (success) "exitoso" else "fallido"}")
+        }
+    }
+
+    // Metodo para notificar actualizaciones de estadísticas
+    private fun notifyStatsUpdated() {
+        // Enviar broadcast para notificar que las estadísticas han cambiado
+        val intent = Intent("com.utnay.stepupquest.STATS_UPDATED")
+        intent.putExtra("steps", stepCount)
+        sendBroadcast(intent)
     }
 }

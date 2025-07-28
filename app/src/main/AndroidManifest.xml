@@ -14,12 +14,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StepUpQuest"
         tools:targetApi="31">
+        <!--    Vista de Estadisticas    -->
         <activity
             android:name=".MainActivity3"
             android:exported="false" />
+        <!--    Vista de Metas    -->
         <activity
             android:name=".MainActivity2"
             android:exported="false" />
+        <!--    Vista Principal    -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
