@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:background="#DCF6F6"
     android:padding="24dp"
-    tools:context=".MainActivity">
+    tools:context=".StepsActivity">
 
 
     <TextView

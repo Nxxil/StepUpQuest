@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(), SensorEventListener {
+class StepsActivity : AppCompatActivity(), SensorEventListener {
 
     private var stepCount = 0
     private var dailyGoal = 10000
@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_steps)
 
         // Vinculación de vistas con sus IDs correctos
         textViewSteps = findViewById(R.id.textViewSteps)
@@ -94,14 +94,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         // Botón: Configurar Meta
         btnMeta.setOnClickListener {
-            val intent = Intent(this, MainActivity2::class.java)
+            val intent = Intent(this, GoalActivity::class.java)
             intent.putExtra("currentGoal", dailyGoal)
             setGoalLauncher.launch(intent)
         }
 
         // Botón: Ver Estadísticas
         btnEst.setOnClickListener {
-            val intent = Intent(this, MainActivity3::class.java)
+            val intent = Intent(this, StatsActivity::class.java)
             startActivity(intent)
         }
     }
