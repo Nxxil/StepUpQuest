@@ -12,7 +12,7 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MainActivity3 : AppCompatActivity() {
+class StatsActivity : AppCompatActivity() {
 
     private lateinit var barChart: BarChart
     private lateinit var btnBack: Button
@@ -20,7 +20,7 @@ class MainActivity3 : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main3)
+        setContentView(R.layout.activity_stats)
 
         // Inicializar vistas
         barChart = findViewById(R.id.barChart)
