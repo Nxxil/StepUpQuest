@@ -39,7 +39,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.play.services.wearable)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -50,6 +49,13 @@ dependencies {
     implementation(libs.androidx.wear.tooling.preview)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
+
+    implementation("androidx.cardview:cardview:1.0.0")
+
+    // Bibliotecas Wear OS válidas
+    implementation("androidx.wear:wear:1.3.0")
+    implementation("androidx.wear.compose:compose-material:1.3.0")
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
