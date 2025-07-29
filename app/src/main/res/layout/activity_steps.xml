@@ -39,38 +39,6 @@
         app:layout_constraintStart_toEndOf="@id/textViewTitle"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/btnEst"
-        android:layout_width="250dp"
-        android:layout_height="58dp"
-        android:layout_marginTop="68dp"
-        android:backgroundTint="#3c7966"
-        android:fontFamily="sans-serif-condensed-light"
-        android:text="Ver Estadísticas"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewSteps" />
-
-    <Button
-        android:id="@+id/btnMeta"
-        android:layout_width="250dp"
-        android:layout_height="58dp"
-        android:layout_marginTop="32dp"
-        android:backgroundTint="#3c7966"
-        android:fontFamily="sans-serif-condensed-light"
-        android:text="Configurar Meta"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.495"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnEst" />
-
     <TextView
         android:id="@+id/textViewGoal"
         android:layout_width="332dp"
@@ -117,4 +85,52 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/progressBar" />
 
+    <Button
+        android:id="@+id/btnEst"
+        android:layout_width="250dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="64dp"
+        android:backgroundTint="#3c7966"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="Ver Estadísticas"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewSteps" />
+
+    <Button
+        android:id="@+id/btnCleanSteps"
+        android:layout_width="250dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#397340"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="Limpiar Pasos"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnEst" />
+
+    <Button
+        android:id="@+id/btnMeta"
+        android:layout_width="250dp"
+        android:layout_height="58dp"
+        android:backgroundTint="#3c7966"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="Configurar Meta"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnCleanSteps"
+        app:layout_constraintVertical_bias="0.22" />
 </androidx.constraintlayout.widget.ConstraintLayout>

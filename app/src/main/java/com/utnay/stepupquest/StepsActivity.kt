@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.CoroutineScope
@@ -26,8 +27,11 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var textViewSteps: TextView
     private lateinit var textViewGoal: TextView
     private lateinit var progressBar: ProgressBar
-    private lateinit var btnMeta: Button
     private lateinit var btnEst: Button
+    private lateinit var btnCleanSteps: Button
+    private lateinit var btnMeta: Button
+
+
 
     // Sensores
     private lateinit var sensorManager: SensorManager
@@ -65,8 +69,11 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
         textViewSteps = findViewById(R.id.textViewSteps)
         textViewGoal = findViewById(R.id.textViewGoal)
         progressBar = findViewById(R.id.progressBar)
-        btnMeta = findViewById(R.id.btnMeta)
         btnEst = findViewById(R.id.btnEst)
+        btnCleanSteps = findViewById(R.id.btnCleanSteps)
+        btnMeta = findViewById(R.id.btnMeta)
+
+
 
         // Inicializar sensores
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
@@ -92,17 +99,25 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
         updateStepCount(stepCount)
         updateGoal(dailyGoal)
 
+        // Botón: Ver Estadísticas
+        btnEst.setOnClickListener {
+            val intent = Intent(this, StatsActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Botón: Limpiar Pasos
+        btnCleanSteps.setOnClickListener {
+            stepCount = 0
+            updateStepCount(stepCount) //Actualiza el contador
+            //Mensaje de reinicio
+            Toast.makeText(this, "El contador de pasos ha sido reiniciado", Toast.LENGTH_SHORT).show()
+        }
+
         // Botón: Configurar Meta
         btnMeta.setOnClickListener {
             val intent = Intent(this, GoalActivity::class.java)
             intent.putExtra("currentGoal", dailyGoal)
             setGoalLauncher.launch(intent)
-        }
-
-        // Botón: Ver Estadísticas
-        btnEst.setOnClickListener {
-            val intent = Intent(this, StatsActivity::class.java)
-            startActivity(intent)
         }
     }
 

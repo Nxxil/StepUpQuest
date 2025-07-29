@@ -30,7 +30,7 @@
         android:id="@+id/barChart"
         android:layout_width="345dp"
         android:layout_height="548dp"
-        android:layout_marginTop="52dp"
+        android:layout_marginTop="20dp"
         android:layout_weight="1"
         android:background="@android:color/white"
         android:elevation="4dp"
@@ -53,7 +53,6 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/barChart"
         app:layout_constraintVertical_bias="1.0" />
