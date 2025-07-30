@@ -21,9 +21,8 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
 
     private var stepCount = 0
     private var dailyGoal = 10000
-    private var totalSteps = 0 // Pasos totales (móvil + wearable)
+    private var totalSteps = 0
 
-    // Declaración de vistas
     private lateinit var textViewSteps: TextView
     private lateinit var textViewGoal: TextView
     private lateinit var progressBar: ProgressBar
@@ -31,33 +30,21 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var btnCleanSteps: Button
     private lateinit var btnMeta: Button
 
-
-
-    // Sensores
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private var gyroscope: Sensor? = null
 
-    // Variables para eventos de sensores
     private var accelEvent: SensorEvent? = null
     private var gyroEvent: SensorEvent? = null
 
-    // Helper para fusión de sensores
     private lateinit var sensorFusionHelper: SensorFusionHelper
-
-    // Data Manager para comunicación con wearable
     private lateinit var stepDataManager: StepDataManager
-
-    // Managers para almacenamiento y TV
     private lateinit var dataStorageManager: DataStorageManager
     private lateinit var tvDataSender: TVDataSender
 
-    // Activity Result Launcher para configurar meta
     private val setGoalLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
-            result.data?.getIntExtra("newGoal", 10000)?.let { newGoal ->
-                updateGoal(newGoal)
-            }
+            result.data?.getIntExtra("newGoal", 10000)?.let { updateGoal(it) }
         }
     }
 
@@ -65,7 +52,7 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_steps)
 
-        // Vinculación de vistas con sus IDs correctos
+        // Inicializar vistas
         textViewSteps = findViewById(R.id.textViewSteps)
         textViewGoal = findViewById(R.id.textViewGoal)
         progressBar = findViewById(R.id.progressBar)
@@ -73,47 +60,41 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
         btnCleanSteps = findViewById(R.id.btnCleanSteps)
         btnMeta = findViewById(R.id.btnMeta)
 
-
-
-        // Inicializar sensores
+        // Inicializar sensores y helpers
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
-
-        // Inicializar SensorFusionHelper
         sensorFusionHelper = SensorFusionHelper()
 
-        // Inicializar Data Manager
+        // Inicializar gestores
         stepDataManager = StepDataManager(this)
-
-        // Inicializar managers para almacenamiento y TV
         dataStorageManager = DataStorageManager(this)
         tvDataSender = TVDataSender(this)
 
-        // Cargar la meta guardada
+        // Cargar valores previos
         dailyGoal = dataStorageManager.getDailyGoal()
         stepCount = dataStorageManager.getTodaySteps()
         totalSteps = stepCount
 
-        // Inicializar UI
+        // Mostrar datos iniciales
         updateStepCount(stepCount)
         updateGoal(dailyGoal)
 
-        // Botón: Ver Estadísticas
+        // Botón: ver estadísticas
         btnEst.setOnClickListener {
             val intent = Intent(this, StatsActivity::class.java)
+            intent.putExtra("dailyGoal", dailyGoal)
             startActivity(intent)
         }
 
-        // Botón: Limpiar Pasos
+        // Botón: reiniciar pasos
         btnCleanSteps.setOnClickListener {
             stepCount = 0
-            updateStepCount(stepCount) //Actualiza el contador
-            //Mensaje de reinicio
-            Toast.makeText(this, "El contador de pasos ha sido reiniciado", Toast.LENGTH_SHORT).show()
+            updateStepCount(stepCount)
+            Toast.makeText(this, "Contador reiniciado", Toast.LENGTH_SHORT).show()
         }
 
-        // Botón: Configurar Meta
+        // Botón: cambiar meta
         btnMeta.setOnClickListener {
             val intent = Intent(this, GoalActivity::class.java)
             intent.putExtra("currentGoal", dailyGoal)
@@ -123,18 +104,12 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onResume() {
         super.onResume()
-        // Registrar los listeners de los sensores
-        accelerometer?.also { sensor ->
-            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }
-        gyroscope?.also { sensor ->
-            sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-        }
+        accelerometer?.also { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+        gyroscope?.also { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
     }
 
     override fun onPause() {
         super.onPause()
-        // Desregistrar los listeners de los sensores para ahorrar batería
         sensorManager.unregisterListener(this)
     }
 
@@ -153,37 +128,30 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // No utilizado
+    }
+
     private fun checkForStep() {
         if (sensorFusionHelper.isStepDetected(accelEvent, gyroEvent)) {
             stepCount++
             totalSteps = stepCount
             updateStepCount(stepCount)
-
-            // Enviar datos al wearable
             stepDataManager.sendStepsToWear(totalSteps)
-
-            // Verificar porcentajes para notificaciones
             checkMilestonePercentage()
-
-            // Enviar datos a TV
             sendDataToTV()
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No se necesita implementar para este caso
-    }
-
     private fun checkMilestonePercentage() {
         val percentage = if (dailyGoal == 0) 0 else (totalSteps * 100) / dailyGoal
-
-        when {
-            percentage >= 80 && percentage < 85 -> {
-                stepDataManager.sendNotificationToWear(percentage, "¡Llegaste al 80% de tu meta diaria!")
+        when (percentage) {
+            in 50..54 -> {
+                stepDataManager.sendNotificationToWear(percentage, "¡Llegaste al 50% de tu meta diaria!")
                 sendStatsToTV()
             }
-            percentage >= 50 && percentage < 55 -> {
-                stepDataManager.sendNotificationToWear(percentage, "¡Llegaste al 50% de tu meta diaria!")
+            in 80..84 -> {
+                stepDataManager.sendNotificationToWear(percentage, "¡Llegaste al 80% de tu meta diaria!")
                 sendStatsToTV()
             }
         }
@@ -193,30 +161,22 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
         stepCount = steps
         textViewSteps.text = getString(R.string.steps_text, stepCount)
         updateProgressBar()
-
-        // Guardar pasos diarios y en historial
         dataStorageManager.saveDailySteps(stepCount)
         dataStorageManager.addToHistory(stepCount)
 
-        // Notificar que las estadísticas se actualizaron
-        notifyStatsUpdated()
-
-        // Logging para debug
-        Log.d("MainActivity", "Pasos actualizados: $stepCount, Historial: ${dataStorageManager.getStepHistory()}")
+        Log.d("StepsActivity", "Pasos: $stepCount | Historial: ${dataStorageManager.getStepHistory()}")
     }
 
     private fun updateGoal(goal: Int) {
         dailyGoal = goal
         textViewGoal.text = getString(R.string.goal_text, dailyGoal)
         updateProgressBar()
-
-        // Guardar meta diaria
         dataStorageManager.saveDailyGoal(goal)
     }
 
     private fun updateProgressBar() {
         val percentage = if (dailyGoal == 0) 0 else (totalSteps * 100) / dailyGoal
-        progressBar.progress = percentage.coerceAtMost(100) // Limitar a 100%
+        progressBar.progress = percentage.coerceAtMost(100)
     }
 
     private fun sendDataToTV() {
@@ -229,27 +189,16 @@ class StepsActivity : AppCompatActivity(), SensorEventListener {
                 timestamp = System.currentTimeMillis(),
                 dailyGoal = dailyGoal
             )
-
-            Log.d("MainActivity", "Enviando datos a TV: $stepData")
             val success = tvDataSender.sendDataToTV(stepData)
-            Log.d("MainActivity", "Envío a TV ${if (success) "exitoso" else "fallido"}")
+            Log.d("StepsActivity", "TV: datos enviados ${if (success) "✔" else "✘"}")
         }
     }
 
     private fun sendStatsToTV() {
         CoroutineScope(Dispatchers.IO).launch {
             val history = dataStorageManager.getStepHistory()
-            Log.d("MainActivity", "Enviando estadísticas a TV: $history")
             val success = tvDataSender.sendStatsData(history)
-            Log.d("MainActivity", "Envío de estadísticas a TV ${if (success) "exitoso" else "fallido"}")
+            Log.d("StepsActivity", "TV: historial enviado ${if (success) "✔" else "✘"}")
         }
-    }
-
-    // Metodo para notificar actualizaciones de estadísticas
-    private fun notifyStatsUpdated() {
-        // Enviar broadcast para notificar que las estadísticas han cambiado
-        val intent = Intent("com.utnay.stepupquest.STATS_UPDATED")
-        intent.putExtra("steps", stepCount)
-        sendBroadcast(intent)
     }
 }

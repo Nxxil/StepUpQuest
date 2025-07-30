@@ -11,104 +11,92 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.max
+import kotlin.random.Random
 
 class StatsActivity : AppCompatActivity() {
 
     private lateinit var barChart: BarChart
     private lateinit var btnBack: Button
     private lateinit var dataStorageManager: DataStorageManager
+    private var dailyGoal: Int = 10000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
-        // Inicializar vistas
+        dailyGoal = intent.getIntExtra("dailyGoal", 10000)
+
         barChart = findViewById(R.id.barChart)
         btnBack = findViewById(R.id.btnBack)
 
-        // Inicializar DataStorageManager
         dataStorageManager = DataStorageManager(this)
 
-        // Configurar botón de regreso
-        btnBack.setOnClickListener {
-            finish()
-        }
+        btnBack.setOnClickListener { finish() }
 
-        // Cargar y mostrar estadísticas
         loadAndDisplayStats()
     }
 
     override fun onResume() {
         super.onResume()
-        // Actualizar estadísticas cuando la actividad se reanuda
         loadAndDisplayStats()
     }
 
     private fun loadAndDisplayStats() {
-        // Obtener datos de la semana
         val weeklyData = dataStorageManager.getWeeklySteps()
-
-        // Configurar y mostrar gráfico
         setupBarChart(weeklyData)
     }
 
     private fun setupBarChart(weeklyData: Map<String, Int>) {
-        // Limpiar datos existentes
         barChart.clear()
-
-        // Preparar datos para el gráfico
-        val entries = mutableListOf<BarEntry>()
+        val stackedEntries = mutableListOf<BarEntry>()
         val labels = mutableListOf<String>()
+        var maxSteps = 0
 
-        // Convertir mapa a lista y ordenar por fecha
         val sortedData = weeklyData.toList().sortedBy {
             try {
                 SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.first)
             } catch (e: Exception) {
-                Date() // Fecha actual si hay error
+                Date()
             }
         }
 
-        // Crear entradas para el gráfico
         sortedData.forEachIndexed { index, (date, steps) ->
-            entries.add(BarEntry(index.toFloat(), steps.toFloat()))
             labels.add(formatDateLabel(date))
-        }
+            val goal = dailyGoal.toFloat()
+            val stepsFloat = steps.toFloat()
+            maxSteps = max(maxSteps, steps)
 
-        // Si no hay datos reales, mostrar datos de prueba
-        if (entries.isEmpty()) {
-            // Generar datos de prueba para los últimos 7 días
-            val calendar = Calendar.getInstance()
-            for (i in 6 downTo 0) {
-                val testDate = calendar.clone() as Calendar
-                testDate.add(Calendar.DAY_OF_YEAR, -i)
-                val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(testDate.time)
-
-                // Generar pasos aleatorios entre 1000 y 10000
-                val randomSteps = (1000..10000).random().toFloat()
-
-                entries.add(BarEntry((6-i).toFloat(), randomSteps))
-                labels.add(formatDateLabel(dateStr))
+            if (steps > dailyGoal) {
+                stackedEntries.add(BarEntry(index.toFloat(), floatArrayOf(goal, stepsFloat - goal)))
+            } else {
+                stackedEntries.add(BarEntry(index.toFloat(), floatArrayOf(stepsFloat, 0f)))
             }
         }
 
-        // Crear dataset
-        val dataSet = BarDataSet(entries, "Pasos por día")
-        dataSet.color = getColorFromRes(R.color.chart_bar_color)
-        dataSet.valueTextColor = android.graphics.Color.BLACK
-        dataSet.valueTextSize = 12f
+        if (stackedEntries.isEmpty()) {
+            maxSteps = generateTestData(labels, stackedEntries)
+        }
 
-        // Crear BarData
-        val barData = BarData(dataSet)
+        if (maxSteps == 0) maxSteps = dailyGoal
+
+        val stackedDataSet = BarDataSet(stackedEntries, "Pasos")
+        stackedDataSet.setColors(
+            getColorFromRes(R.color.normal_bar_color),    // Verde
+            getColorFromRes(R.color.plus_ultra_bar_color) // Naranja
+        )
+        stackedDataSet.stackLabels = arrayOf("Pasos base", "Exceso")
+        stackedDataSet.valueTextColor = android.graphics.Color.BLACK
+        stackedDataSet.valueTextSize = 12f
+
+        val barData = BarData(stackedDataSet)
         barData.barWidth = 0.7f
-
-        // Configurar gráfico
         barChart.data = barData
+
         barChart.description.isEnabled = false
         barChart.legend.textSize = 14f
         barChart.legend.textColor = android.graphics.Color.BLACK
 
-        // Configurar eje X
         val xAxis = barChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
@@ -116,20 +104,42 @@ class StatsActivity : AppCompatActivity() {
         xAxis.textSize = 10f
         xAxis.textColor = android.graphics.Color.BLACK
 
-        // Configurar eje Y izquierdo
         val leftAxis = barChart.axisLeft
         leftAxis.textSize = 10f
         leftAxis.textColor = android.graphics.Color.BLACK
         leftAxis.axisMinimum = 0f
+        leftAxis.axisMaximum = maxSteps.toFloat()
 
-        // Ocultar eje Y derecho
         barChart.axisRight.isEnabled = false
-
-        // Animación
         barChart.animateY(1000)
-
-        // Refrescar
         barChart.invalidate()
+    }
+
+    private fun generateTestData(
+        labels: MutableList<String>,
+        stackedEntries: MutableList<BarEntry>
+    ): Int {
+        val calendar = Calendar.getInstance()
+        var maxGeneratedSteps = 0
+
+        for (i in 0..6) {
+            val testDate = calendar.clone() as Calendar
+            testDate.add(Calendar.DAY_OF_YEAR, -(6 - i))
+            val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(testDate.time)
+            labels.add(dateStr)
+
+            val randomSteps = Random.nextInt(1000, 15001).toFloat()
+            maxGeneratedSteps = max(maxGeneratedSteps, randomSteps.toInt())
+            val goal = dailyGoal.toFloat()
+
+            if (randomSteps > goal) {
+                stackedEntries.add(BarEntry((6 - i).toFloat(), floatArrayOf(goal, randomSteps - goal)))
+            } else {
+                stackedEntries.add(BarEntry((6 - i).toFloat(), floatArrayOf(randomSteps, 0f)))
+            }
+        }
+
+        return maxGeneratedSteps
     }
 
     private fun formatDateLabel(dateString: String): String {
@@ -139,7 +149,7 @@ class StatsActivity : AppCompatActivity() {
             val displayFormat = SimpleDateFormat("EEE dd", Locale.getDefault())
             displayFormat.format(date)
         } catch (e: Exception) {
-            dateString.takeLast(5) // Retorna solo mes-día si falla el parseo
+            dateString.takeLast(5)
         }
     }
 
@@ -152,7 +162,7 @@ class StatsActivity : AppCompatActivity() {
                 resources.getColor(colorRes)
             }
         } catch (e: Exception) {
-            android.graphics.Color.BLUE // Color por defecto
+            android.graphics.Color.BLUE
         }
     }
 }
