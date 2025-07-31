@@ -89,7 +89,7 @@
         android:id="@+id/btnEst"
         android:layout_width="250dp"
         android:layout_height="58dp"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="80dp"
         android:backgroundTint="#3c7966"
         android:fontFamily="sans-serif-condensed-light"
         android:text="Ver Estadísticas"
@@ -105,7 +105,7 @@
         android:id="@+id/btnCleanSteps"
         android:layout_width="250dp"
         android:layout_height="58dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:backgroundTint="#397340"
         android:fontFamily="sans-serif-condensed-light"
         android:text="Limpiar Pasos"
@@ -132,5 +132,8 @@
         app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnCleanSteps"
-        app:layout_constraintVertical_bias="0.22" />
+        app:layout_constraintVertical_bias="0.166" />
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

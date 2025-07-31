@@ -40,11 +40,26 @@
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <Button
+        android:id="@+id/btnStream"
+        android:layout_width="155dp"
+        android:layout_height="54dp"
+        android:layout_marginTop="36dp"
+        android:backgroundTint="#3c7966"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="Ver en TV"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/barChart" />
+
+    <Button
         android:id="@+id/btnBack"
         android:layout_width="155dp"
         android:layout_height="54dp"
-        android:layout_marginTop="38dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginTop="13dp"
+        android:layout_marginBottom="4dp"
         android:backgroundTint="#3c7966"
         android:fontFamily="sans-serif-condensed-light"
         android:text="Volver"
@@ -54,7 +69,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barChart"
+        app:layout_constraintTop_toBottomOf="@+id/btnStream"
         app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
