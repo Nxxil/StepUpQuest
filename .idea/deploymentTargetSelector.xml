@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="stepupquest_wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-27T16:53:12.711153100Z">
+        <DropdownSelection timestamp="2025-08-01T03:07:14.395317700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Small_Round.avd" />
@@ -28,38 +28,9 @@
       </SelectionState>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-27T22:46:39.478149800Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Pixel_9_Pro_XL.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection>
-          <targets>
-            <Target type="DEFAULT_BOOT">
-              <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Pixel_9_Pro_XL.avd" />
-              </handle>
-            </Target>
-            <Target type="DEFAULT_BOOT">
-              <handle>
-                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Small_Round.avd" />
-              </handle>
-            </Target>
-          </targets>
-        </DialogSelection>
       </SelectionState>
       <SelectionState runConfigName="stepupquest_tv">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-28T21:01:25.422284200Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\sams\.android\avd\Television_720p.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
       </SelectionState>
     </selectionStates>
   </component>

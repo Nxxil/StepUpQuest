@@ -17,7 +17,7 @@
             android:id="@+id/tvHora"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="11:11"
+            android:text="@string/placeholder_time"
             android:textSize="36sp"
             android:textStyle="bold"
             android:textColor="#000000"
@@ -29,7 +29,7 @@
             android:id="@+id/tvFecha"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="JUE JULIO 24"
+            android:text="@string/placeholder_date"
             android:textSize="14sp"
             android:textColor="#000000"
             android:layout_marginBottom="12dp" />
@@ -43,6 +43,17 @@
             android:clipToPadding="false"
             android:overScrollMode="never"
             android:scrollbars="none" />
+
+        <!-- TextView para los Pasos -->
+        <TextView
+            android:id="@+id/tvPasos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pasos: 0"
+            android:textSize="20sp"
+            android:textColor="#333333"
+            android:layout_marginTop="12dp" />
+
     </LinearLayout>
 
 </androidx.wear.widget.BoxInsetLayout>

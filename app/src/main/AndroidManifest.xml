@@ -41,7 +41,8 @@
 
                 <data
                     android:host="*"
-                    android:scheme="wear" />
+                    android:scheme="wear"
+                    android:pathPrefix="/phone_to_wear_updates"/>
             </intent-filter>
         </service>
     </application>

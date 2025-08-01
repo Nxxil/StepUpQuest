@@ -41,9 +41,9 @@ class StepDataManager(private val context: Context) {
     fun sendNotificationToWear(percentage: Int, message: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val notificationPath = "/notifications"
+                val notificationPath = "/phone_to_wear_updates"
                 val putDataMapRequest = PutDataMapRequest.create(notificationPath)
-                putDataMapRequest.dataMap.putInt("percentage", percentage)
+                putDataMapRequest.dataMap.putInt("percentage_achieved", percentage)
                 putDataMapRequest.dataMap.putString("message", message)
                 putDataMapRequest.dataMap.putLong("timestamp", System.currentTimeMillis())
 
@@ -61,32 +61,3 @@ class StepDataManager(private val context: Context) {
     }
 }
 
-// class StepDataManager(private val context: Context) {
-//
-// private val messageClient by lazy { Wearable.getMessageClient(context) }
-// private val capabilityClient by lazy { Wearable.getCapabilityClient(context) }
-//
-// fun sendNotificationToWear(percentage: Int, messageText: String) {
-// val messageData = "$percentage;$messageText".toByteArray()
-// // Find connected nodes that have the "wear_app" capability (optional, but good practice)
-// capabilityClient.getCapability("wear_app", CapabilityClient.FILTER_REACHABLE)
-// .addOnSuccessListener { capabilityInfo ->
-// val nodes = capabilityInfo.nodes
-// nodes.forEach { node ->
-// messageClient.sendMessage(node.id, "/step_milestone", messageData)
-// .addOnSuccessListener {
-// Log.d("StepDataManager", "Message sent to ${node.displayName}")
-// }
-// .addOnFailureListener {
-// Log.e("StepDataManager", "Failed to send message to ${node.displayName}", it)
-// }
-// }
-// if (nodes.isEmpty()) {
-// Log.w("StepDataManager", "No wearable nodes found with 'wear_app' capability")
-// }
-// }
-// .addOnFailureListener {
-// Log.e("StepDataManager", "Failed to get capability info", it)
-// }
-// }
-// }

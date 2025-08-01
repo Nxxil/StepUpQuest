@@ -4,7 +4,8 @@
     This string is used for square devices and overridden by hello_world in
     values-round/strings.xml for round devices.
     -->
-
+    <string name="placeholder_time">11:11</string>
+    <string name="placeholder_date">JUE JULIO 24</string>
     <string name="notification_channel_name">Step Milestones</string>
     <string name="notification_channel_description">Notifications for reaching step goal milestones.</string>
     <string name="hello_world">From your\nWearable!</string>
