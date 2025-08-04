@@ -56,7 +56,7 @@ import kotlin.text.toLong
 
 class MainActivity : FragmentActivity(), SensorEventListener {
 
-    // Para la hora (código anterior)
+    // Para la hora
     private lateinit var tvHora: TextView
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var timeUpdateRunnable: Runnable
