@@ -39,7 +39,9 @@ android {
 }
 
 dependencies {
-
+    implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(platform(libs.androidx.compose.bom))
@@ -50,6 +52,8 @@ dependencies {
     implementation(libs.androidx.tv.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.play.services.cast)
+    implementation(libs.play.services.cast.framework)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)

@@ -18,11 +18,11 @@ import com.google.android.gms.wearable.WearableListenerService
 
 class NotificationService : WearableListenerService() {
 
-    private val NOTIFICATION_CHANNEL_ID = "step_milestone_channel"
+    private val NOTIFICATION_CHANNEL_ID = "phone_to_wear_updates"
     private val NOTIFICATION_ID = 101
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        if (messageEvent.path == "/step_milestone") {
+        if (messageEvent.path == "/phone_to_wear_updates") {
             val message = String(messageEvent.data)
             // Assuming the message format is "percentage;notificationText"
             val parts = message.split(";")

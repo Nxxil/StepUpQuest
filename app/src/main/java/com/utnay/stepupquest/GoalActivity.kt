@@ -6,14 +6,14 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity2 : AppCompatActivity() {
+class GoalActivity : AppCompatActivity() {
 
     private lateinit var editTextGoal: EditText
     private lateinit var buttonSave: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main2)
+        setContentView(R.layout.activity_goal)
 
         editTextGoal = findViewById(R.id.editTextGoal)
         buttonSave = findViewById(R.id.buttonSaveGoal)

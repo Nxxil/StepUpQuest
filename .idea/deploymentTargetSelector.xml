@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="stepupquest_wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-27T16:53:12.711153100Z">
+        <DropdownSelection timestamp="2025-08-06T11:07:07.722525Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Small_Round.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Square.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -28,7 +28,7 @@
       </SelectionState>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-07-27T22:46:39.478149800Z">
+        <DropdownSelection timestamp="2025-08-06T11:05:22.679929300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Pixel_9_Pro_XL.avd" />
@@ -52,6 +52,27 @@
       </SelectionState>
       <SelectionState runConfigName="stepupquest_tv">
         <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-08-04T20:54:34.571582700Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Television_1080p.avd" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection>
+          <targets>
+            <Target type="DEFAULT_BOOT">
+              <handle>
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Pixel_9_Pro_XL.avd" />
+              </handle>
+            </Target>
+            <Target type="DEFAULT_BOOT">
+              <handle>
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Television_1080p.avd" />
+              </handle>
+            </Target>
+          </targets>
+        </DialogSelection>
       </SelectionState>
     </selectionStates>
   </component>
