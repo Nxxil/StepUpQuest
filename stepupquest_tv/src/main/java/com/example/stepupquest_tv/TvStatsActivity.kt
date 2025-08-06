@@ -59,6 +59,7 @@ class TvStatsActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tv_stats)
 
+        // Enlazar vistas
         textViewChartTitle = findViewById(R.id.textViewChartTitle)
         barChart = findViewById(R.id.barChartStats)
         buttonDaily = findViewById(R.id.buttonDaily)
@@ -67,6 +68,7 @@ class TvStatsActivity : FragmentActivity() {
         setupChart()
         com.google.android.gms.cast.framework.CastContext.getSharedInstance(this) // Asegura inicialización
 
+        // Configurar botones
         buttonDaily.setOnClickListener {
             textViewChartTitle.text = "Pasos Diarios (Últimos 7 días)"
             fullStepHistory?.let { history ->

@@ -1,7 +1,9 @@
 package com.utnay.stepupquest
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
@@ -9,17 +11,33 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.google.android.gms.cast.Cast
+import com.google.android.gms.cast.CastDevice
+import com.google.android.gms.cast.framework.CastContext
+import com.google.android.gms.cast.framework.CastSession
+import com.google.android.gms.cast.framework.SessionManager
+import com.google.android.gms.cast.framework.SessionManagerListener
+import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.max
-import kotlin.random.Random
 
 class StatsActivity : AppCompatActivity() {
 
     private lateinit var barChart: BarChart
+    private lateinit var btnStream: Button
     private lateinit var btnBack: Button
     private lateinit var dataStorageManager: DataStorageManager
     private var dailyGoal: Int = 10000
+
+    private lateinit var weeklyData: Map<String, Int>
+
+    // Cast
+    private lateinit var tvDataSender: TVDataSender
+    private lateinit var castContext: CastContext
+    private var castSession: CastSession? = null
+    private val gson = Gson()
+    private val namespace = "urn:x-cast:com.utnay.stepupquest"
+    private var customChannel: CustomChannel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,13 +46,30 @@ class StatsActivity : AppCompatActivity() {
         dailyGoal = intent.getIntExtra("dailyGoal", 10000)
 
         barChart = findViewById(R.id.barChart)
+        btnStream = findViewById(R.id.btnStream)
         btnBack = findViewById(R.id.btnBack)
 
         dataStorageManager = DataStorageManager(this)
+        loadAndDisplayStats()
 
         btnBack.setOnClickListener { finish() }
 
-        loadAndDisplayStats()
+        try {
+            castContext = CastContext.getSharedInstance(this)
+            castContext.sessionManager.addSessionManagerListener(sessionManagerListener, CastSession::class.java)
+        } catch (e: Exception) {
+            Log.e("StatsActivity", "CastContext error", e)
+            Toast.makeText(this, "Cast no disponible", Toast.LENGTH_SHORT).show()
+        }
+
+        btnStream.setOnClickListener {
+            val session = castContext.sessionManager.currentCastSession
+            if (session != null && session.isConnected) {
+                sendStatsToTV(weeklyData)
+            } else {
+                Toast.makeText(this, "No hay dispositivo TV conectado", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onResume() {
@@ -42,54 +77,106 @@ class StatsActivity : AppCompatActivity() {
         loadAndDisplayStats()
     }
 
+    override fun onDestroy() {
+        castContext.sessionManager.removeSessionManagerListener(sessionManagerListener, CastSession::class.java)
+        super.onDestroy()
+    }
+
+    private val sessionManagerListener = object : SessionManagerListener<CastSession> {
+        override fun onSessionStarted(session: CastSession, sessionId: String) {
+            castSession = session
+            setupChannel()
+        }
+
+        override fun onSessionResumed(session: CastSession, wasSuspended: Boolean) {
+            castSession = session
+            setupChannel()
+        }
+
+        override fun onSessionEnded(session: CastSession, error: Int) {
+            castSession = null
+            customChannel = null
+        }
+
+        override fun onSessionSuspended(session: CastSession, reason: Int) {}
+        override fun onSessionResumeFailed(session: CastSession, error: Int) {}
+        override fun onSessionStartFailed(session: CastSession, error: Int) {}
+        override fun onSessionStarting(session: CastSession) {}
+        override fun onSessionEnding(session: CastSession) {}
+        override fun onSessionResuming(session: CastSession, sessionId: String) {}
+    }
+
+    private fun setupChannel() {
+        try {
+            customChannel = CustomChannel(namespace)
+            customChannel?.let { channel ->
+                castSession?.setMessageReceivedCallbacks(namespace, channel)
+            }
+        } catch (e: Exception) {
+            Log.e("StatsActivity", "Error al registrar canal", e)
+        }
+    }
+
+    private fun sendStatsToTV(data: Map<String, Int>) {
+        val session = castSession
+        if (session == null || customChannel == null) return
+
+        try {
+            val message = mapOf("type" to "stats_data", "data" to data)
+            val json = gson.toJson(message)
+
+            session.sendMessage(namespace, json).setResultCallback { status ->
+                runOnUiThread {
+                    if (status.isSuccess) {
+                        Toast.makeText(this, "Enviado a TV", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "Error al enviar (${status.statusCode})", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("StatsActivity", "Error al enviar mensaje", e)
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun loadAndDisplayStats() {
-        val weeklyData = dataStorageManager.getWeeklySteps()
+        weeklyData = dataStorageManager.getWeeklySteps()
         setupBarChart(weeklyData)
     }
 
-    private fun setupBarChart(weeklyData: Map<String, Int>) {
+    private fun setupBarChart(data: Map<String, Int>) {
         barChart.clear()
-        val stackedEntries = mutableListOf<BarEntry>()
+        val entries = mutableListOf<BarEntry>()
         val labels = mutableListOf<String>()
         var maxSteps = 0
 
-        val sortedData = weeklyData.toList().sortedBy {
+        val sortedData = data.toList().sortedBy { (date, _) ->
             try {
-                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.first)
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date)
             } catch (e: Exception) {
-                Date()
+                Date(0)
             }
         }
 
         sortedData.forEachIndexed { index, (date, steps) ->
             labels.add(formatDateLabel(date))
-            val goal = dailyGoal.toFloat()
-            val stepsFloat = steps.toFloat()
-            maxSteps = max(maxSteps, steps)
-
-            if (steps > dailyGoal) {
-                stackedEntries.add(BarEntry(index.toFloat(), floatArrayOf(goal, stepsFloat - goal)))
-            } else {
-                stackedEntries.add(BarEntry(index.toFloat(), floatArrayOf(stepsFloat, 0f)))
-            }
+            maxSteps = maxOf(maxSteps, steps)
+            entries.add(BarEntry(index.toFloat(), steps.toFloat()))
         }
 
-        if (stackedEntries.isEmpty()) {
-            maxSteps = generateTestData(labels, stackedEntries)
+        if (entries.isEmpty()) {
+            maxSteps = 10000
+            entries.add(BarEntry(0f, 5000f))
+            labels.add("N/A")
         }
 
-        if (maxSteps == 0) maxSteps = dailyGoal
+        val dataSet = BarDataSet(entries, "Pasos")
+        dataSet.color = getColorFromRes(R.color.normal_bar_color)
+        dataSet.valueTextColor = android.graphics.Color.BLACK
+        dataSet.valueTextSize = 12f
 
-        val stackedDataSet = BarDataSet(stackedEntries, "Pasos")
-        stackedDataSet.setColors(
-            getColorFromRes(R.color.normal_bar_color),    // Verde
-            getColorFromRes(R.color.plus_ultra_bar_color) // Naranja
-        )
-        stackedDataSet.stackLabels = arrayOf("Pasos base", "Exceso")
-        stackedDataSet.valueTextColor = android.graphics.Color.BLACK
-        stackedDataSet.valueTextSize = 12f
-
-        val barData = BarData(stackedDataSet)
+        val barData = BarData(dataSet)
         barData.barWidth = 0.7f
         barChart.data = barData
 
@@ -101,45 +188,17 @@ class StatsActivity : AppCompatActivity() {
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.setDrawGridLines(false)
         xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        xAxis.textSize = 10f
+        xAxis.granularity = 1f
         xAxis.textColor = android.graphics.Color.BLACK
 
         val leftAxis = barChart.axisLeft
-        leftAxis.textSize = 10f
-        leftAxis.textColor = android.graphics.Color.BLACK
         leftAxis.axisMinimum = 0f
         leftAxis.axisMaximum = maxSteps.toFloat()
+        leftAxis.textColor = android.graphics.Color.BLACK
 
         barChart.axisRight.isEnabled = false
         barChart.animateY(1000)
         barChart.invalidate()
-    }
-
-    private fun generateTestData(
-        labels: MutableList<String>,
-        stackedEntries: MutableList<BarEntry>
-    ): Int {
-        val calendar = Calendar.getInstance()
-        var maxGeneratedSteps = 0
-
-        for (i in 0..6) {
-            val testDate = calendar.clone() as Calendar
-            testDate.add(Calendar.DAY_OF_YEAR, -(6 - i))
-            val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(testDate.time)
-            labels.add(dateStr)
-
-            val randomSteps = Random.nextInt(1000, 15001).toFloat()
-            maxGeneratedSteps = max(maxGeneratedSteps, randomSteps.toInt())
-            val goal = dailyGoal.toFloat()
-
-            if (randomSteps > goal) {
-                stackedEntries.add(BarEntry((6 - i).toFloat(), floatArrayOf(goal, randomSteps - goal)))
-            } else {
-                stackedEntries.add(BarEntry((6 - i).toFloat(), floatArrayOf(randomSteps, 0f)))
-            }
-        }
-
-        return maxGeneratedSteps
     }
 
     private fun formatDateLabel(dateString: String): String {
@@ -164,5 +223,13 @@ class StatsActivity : AppCompatActivity() {
         } catch (e: Exception) {
             android.graphics.Color.BLUE
         }
+    }
+
+    inner class CustomChannel(private val namespace: String) : Cast.MessageReceivedCallback {
+        override fun onMessageReceived(castDevice: CastDevice, namespace: String, message: String) {
+            Log.d("StatsActivity", "Mensaje recibido desde TV: $message")
+        }
+
+        fun getNamespace(): String = namespace
     }
 }
