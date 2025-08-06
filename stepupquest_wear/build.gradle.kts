@@ -39,6 +39,18 @@ android {
 }
 
 dependencies {
+    implementation("androidx.core:core-ktx:1.9.0")
+// O la última versión estable
+    implementation("com.google.android.gms:play-services-wearable:19.0.0")
+// Para notificaciones y compatibilidad (MUY IMPORTANTE)
+    implementation("androidx.core:core-app:1.13.1")
+// O la última versión, para NotificationManagerCompat
+    implementation("androidx.appcompat:appcompat:1.7.0")
+// Para NotificationCompat.Builder si usas recursos de appcompat
+
+    implementation("androidx.compose.ui:ui:...")
+    implementation("androidx.wear.compose:compose-material:...")
+    implementation("androidx.wear.compose:compose-foundation:...")
     implementation(libs.play.services.wearable)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)

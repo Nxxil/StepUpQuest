@@ -134,6 +134,22 @@
         app:layout_constraintTop_toBottomOf="@+id/btnCleanSteps"
         app:layout_constraintVertical_bias="0.166" />
 
+    <Button
+        android:id="@+id/btnProyectarTV"
+        android:layout_width="250dp"
+        android:layout_height="58dp"
+        android:backgroundTint="#3c7966"
+        android:fontFamily="sans-serif-condensed-light"
+        android:text="Conectar a TV"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnCleanSteps"
+        app:layout_constraintVertical_bias="0.017" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <!-- Permisos necesarios -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -14,37 +18,41 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StepUpQuest"
         tools:targetApi="31">
-        <!--    Vista de Estadisticas    -->
+
+        <!-- Vista de Estadisticas -->
         <activity
             android:name=".StatsActivity"
             android:exported="false" />
-        <!--    Vista de Metas    -->
+
+        <!-- Vista de Metas -->
         <activity
             android:name=".GoalActivity"
             android:exported="false" />
-        <!--    Vista Principal    -->
+
+        <!-- Vista Principal -->
         <activity
             android:name=".StepsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- Servicio para escuchar datos del wearable -->
+        </activity>
+
+        <!-- Servicio para escuchar datos del wearable -->
         <service
             android:name=".DataLayerService"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-
                 <data
                     android:host="*"
                     android:scheme="wear"
                     android:pathPrefix="/phone_to_wear_updates"/>
             </intent-filter>
         </service>
+
     </application>
 
 </manifest>

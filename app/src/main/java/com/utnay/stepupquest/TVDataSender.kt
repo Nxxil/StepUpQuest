@@ -19,6 +19,8 @@ class TVDataSender(private val context: Context) {
     companion object {
         const val TAG = "TVDataSender"
         const val NAMESPACE = "urn:x-cast:com.utnay.stepupquest"
+        // Namespace específico para estadísticas completas, si lo prefieres
+        const val FULL_STATS_NAMESPACE = "urn:x-cast:com.utnay.stepupquest.fullstats"
     }
 
     init {
@@ -92,6 +94,22 @@ class TVDataSender(private val context: Context) {
                 true
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to send stats data to TV: ${e.message}")
+                false
+            }
+        } ?: false
+    }
+
+    // Nuevo método para enviar el paquete completo de estadísticas
+    suspend fun sendFullStatsToTV(statsData: StepStatsData): Boolean {
+        return castSession?.let { session ->
+            try {
+                val jsonData = gson.toJson(statsData)
+                // Usamos el namespace específico para estadísticas completas
+                session.sendMessage(FULL_STATS_NAMESPACE, jsonData).await()
+                Log.d(TAG, "Full stats data sent to TV successfully")
+                true
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to send full stats data to TV: ${e.message}")
                 false
             }
         } ?: false

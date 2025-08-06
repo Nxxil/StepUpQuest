@@ -60,4 +60,3 @@ class StepDataManager(private val context: Context) {
         }
     }
 }
-

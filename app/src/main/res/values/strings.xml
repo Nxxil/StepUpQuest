@@ -2,4 +2,6 @@
     <string name="app_name">StepUp Quest</string>
     <string name="steps_text">%d pasos</string>
     <string name="goal_text">META: %d pasos</string>
+    <string name="channel_name_progress">Step Progress</string>
+    <string name="channel_description_progress">Notifications for step count progress</string>
 </resources>

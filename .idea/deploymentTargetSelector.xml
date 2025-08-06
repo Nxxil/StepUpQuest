@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="stepupquest_wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-01T03:07:14.395317700Z">
+        <DropdownSelection timestamp="2025-08-06T11:07:07.722525Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Small_Round.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Square.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -28,14 +28,27 @@
       </SelectionState>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-02T03:25:25.348663700Z">
+        <DropdownSelection timestamp="2025-08-06T11:05:22.679929300Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Pixel_9_Pro_XL.avd" />
             </handle>
           </Target>
         </DropdownSelection>
-        <DialogSelection />
+        <DialogSelection>
+          <targets>
+            <Target type="DEFAULT_BOOT">
+              <handle>
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Pixel_9_Pro_XL.avd" />
+              </handle>
+            </Target>
+            <Target type="DEFAULT_BOOT">
+              <handle>
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\rfosc\.android\avd\Wear_OS_Small_Round.avd" />
+              </handle>
+            </Target>
+          </targets>
+        </DialogSelection>
       </SelectionState>
       <SelectionState runConfigName="stepupquest_tv">
         <option name="selectionMode" value="DROPDOWN" />
